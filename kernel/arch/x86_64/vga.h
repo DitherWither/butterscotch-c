@@ -1,3 +1,5 @@
+#ifndef __ARCH_X86_64_VGA_H__
+#define __ARCH_X86_64_VGA_H__
 #ifndef ARCH_I386_VGA_H
 #define ARCH_I386_VGA_H
 
@@ -31,3 +33,6 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 }
 
 #endif
+
+
+#endif /* __ARCH_X86_64_VGA_H__ */

@@ -9,7 +9,8 @@ mkdir -p isodir/boot/grub
 cp sysroot/boot/butterscotch.kernel isodir/boot/butterscotch.kernel
 cat > isodir/boot/grub/grub.cfg << EOF
 menuentry "butterscotch" {
-	multiboot /boot/butterscotch.kernel
+	multiboot2 /boot/butterscotch.kernel
+	boot
 }
 EOF
 grub2-mkrescue -o butterscotch.iso isodir
