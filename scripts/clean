@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-. ./config.sh
+. scripts/config
 
 for PROJECT in $PROJECTS; do
   (cd $PROJECT && $MAKE clean)
@@ -9,3 +9,5 @@ done
 rm -rf sysroot
 rm -rf isodir
 rm -rf butterscotch.iso
+rm -rf limine
+rm -rf ovmf

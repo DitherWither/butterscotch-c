@@ -1,6 +1,6 @@
-DEFAULT_HOST!=../default-host.sh
+DEFAULT_HOST!=../scripts/default-host
 HOST?=DEFAULT_HOST
-HOSTARCH!=../target-triplet-to-arch.sh $(HOST)
+HOSTARCH!=../scripts/target-triplet-to-arch $(HOST)
 
 CFLAGS?=-O2 -g
 CPPFLAGS?=
