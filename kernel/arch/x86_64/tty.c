@@ -1,66 +1,64 @@
+
+#include "flanterm/backends/fb.h"
+#include "flanterm/flanterm.h"
+#include "qemu_debugcon.h"
+#include <kernel/tty.h>
+#include <limine.h>
 #include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <kernel/tty.h>
+// TODO make a proper config system
+bool debugcon_enable = true;
 
-#include "vga.h"
+__attribute__((
+    used,
+    section(".requests"))) static volatile struct limine_framebuffer_request
+    framebuffer_request = {.id = LIMINE_FRAMEBUFFER_REQUEST, .revision = 0};
 
-static const size_t VGA_WIDTH = 80;
-static const size_t VGA_HEIGHT = 25;
-static uint16_t *const VGA_MEMORY = (uint16_t *)0xB8000;
-
-static size_t terminal_row;
-static size_t terminal_column;
-static uint8_t terminal_color;
-static uint16_t *terminal_buffer;
+struct flanterm_context *ft_ctx = NULL;
 
 void terminal_initialize(void) {
-  terminal_row = 0;
-  terminal_column = 0;
-  terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
-  terminal_buffer = VGA_MEMORY;
-  for (size_t y = 0; y < VGA_HEIGHT; y++) {
-    for (size_t x = 0; x < VGA_WIDTH; x++) {
-      const size_t index = y * VGA_WIDTH + x;
-      terminal_buffer[index] = vga_entry(' ', terminal_color);
+    // Ensure we got a framebuffer.
+    if (framebuffer_request.response == NULL ||
+        framebuffer_request.response->framebuffer_count < 1) {
+        abort();
     }
-  }
-}
 
-void terminal_setcolor(uint8_t color) { terminal_color = color; }
+    // Fetch the first framebuffer.
+    struct limine_framebuffer *framebuffer =
+        framebuffer_request.response->framebuffers[0];
 
-void terminal_putentryat(unsigned char c, uint8_t color, size_t x, size_t y) {
-  const size_t index = y * VGA_WIDTH + x;
-  terminal_buffer[index] = vga_entry(c, color);
-}
+    terminal_writestring("test print");
 
-static void newline() {
-  terminal_column = 0;
-  if (++terminal_row == VGA_HEIGHT) {
-    terminal_row = 0;
-  }
+    ft_ctx = flanterm_fb_init(
+        NULL, NULL, framebuffer->address, framebuffer->width,
+        framebuffer->height, framebuffer->pitch, framebuffer->red_mask_size,
+        framebuffer->red_mask_shift, framebuffer->green_mask_size,
+        framebuffer->green_mask_shift, framebuffer->blue_mask_size,
+        framebuffer->blue_mask_shift, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, 0, 0, 1, 0, 0, 0);
 }
 
 void terminal_putchar(char c) {
-  unsigned char uc = c;
-  if (c == '\n') {
-    newline();
-	return;
-  }
-
-  terminal_putentryat(uc, terminal_color, terminal_column, terminal_row);
-  if (++terminal_column == VGA_WIDTH) {
-    newline();
-  }
+    if (debugcon_enable) {
+        qemu_debugcon_putchar(c);
+    }
+    if (ft_ctx) {
+        flanterm_write(ft_ctx, &c, 1);
+    }
 }
 
 void terminal_write(const char *data, size_t size) {
-  for (size_t i = 0; i < size; i++)
-    terminal_putchar(data[i]);
+    if (debugcon_enable) {
+        qemu_debugcon_write(data, size);
+    }
+    if (ft_ctx) {
+        flanterm_write(ft_ctx, data, size);
+    }
 }
 
 void terminal_writestring(const char *data) {
-  terminal_write(data, strlen(data));
+    terminal_write(data, strlen(data));
 }

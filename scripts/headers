@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 . scripts/config
 
@@ -7,3 +7,7 @@ mkdir -p "$SYSROOT"
 for PROJECT in $SYSTEM_HEADER_PROJECTS; do
   (cd $PROJECT && DESTDIR="$SYSROOT" $MAKE install-headers)
 done
+
+if [ ! -f $SYSROOT/usr/include/limine.h ]; then
+  curl -Lo $SYSROOT/usr/include/limine.h https://github.com/limine-bootloader/limine/raw/trunk/limine.h
+fi

@@ -2,4 +2,4 @@
 set -e
 . scripts/iso
 
-qemu-system-$(scripts/target-triplet-to-arch $HOST) -cdrom butterscotch.iso
+qemu-system-$(scripts/target-triplet-to-arch $HOST) -M q35 -m 2G -cdrom butterscotch.iso -debugcon file:debugcon.log -boot d -no-reboot
