@@ -2,3 +2,5 @@
 isodir
 sysroot
 .cache
+ovmf
+limine

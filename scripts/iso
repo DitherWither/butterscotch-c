@@ -1,16 +1,25 @@
 #!/bin/sh
 set -e
+# If limine's directory doesn't exist, fetch limine and ovmf files
+# Sets up limine.h header as well
+if [ ! -d "limine" ]; then
+	scripts/fetch-external-sources
+fi
 . scripts/build
 
-mkdir -p isodir
-mkdir -p isodir/boot
-mkdir -p isodir/boot/grub
+rm -rf isodir
+cp -r sysroot isodir
+mkdir -p isodir/boot/limine
+cp limine.cfg limine/limine-bios.sys limine/limine-bios-cd.bin limine/limine-uefi-cd.bin isodir/boot/limine/
 
-cp sysroot/boot/butterscotch.kernel isodir/boot/butterscotch.kernel
-cat > isodir/boot/grub/grub.cfg << EOF
-menuentry "butterscotch" {
-	multiboot2 /boot/butterscotch.kernel
-	boot
-}
-EOF
-grub2-mkrescue -o butterscotch.iso isodir
+mkdir -p isodir/EFI/BOOT
+cp limine/BOOTX64.EFI isodir/EFI/BOOT/
+cp limine/BOOTIA32.EFI isodir/EFI/BOOT/
+
+xorriso -as mkisofs -b boot/limine/limine-bios-cd.bin \
+	-no-emul-boot -boot-load-size 4 -boot-info-table \
+	--efi-boot boot/limine/limine-uefi-cd.bin \
+	-efi-boot-part --efi-boot-image --protective-msdos-label \
+	isodir -o butterscotch.iso
+
+./limine/limine bios-install butterscotch.iso
