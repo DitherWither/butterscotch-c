@@ -9,5 +9,3 @@ done
 rm -rf sysroot
 rm -rf isodir
 rm -rf butterscotch.iso
-rm -rf limine
-rm -rf ovmf

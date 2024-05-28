@@ -1,10 +1,5 @@
 #!/bin/sh
 set -e
-# If limine's directory doesn't exist, fetch limine and ovmf files
-# Sets up limine.h header as well
-if [ ! -d "limine" ]; then
-	scripts/fetch-external-sources
-fi
 . scripts/build
 
 rm -rf isodir

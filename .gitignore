@@ -3,4 +3,4 @@ isodir
 sysroot
 .cache
 ovmf
-limine
+debugcon.log
