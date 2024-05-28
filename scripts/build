@@ -3,6 +3,10 @@ set -e
 
 . scripts/headers
 
+# Not added as a project, as the limine directory does not have an install headers target
+# Run inside env -i, as limine can't be compiled with the current cross compiler
+(cd limine && DESTDIR="$SYSROOT" PREFIX="/usr" CC="gcc" make install)
+
 for PROJECT in $PROJECTS; do
   (cd $PROJECT && DESTDIR="$SYSROOT" $MAKE install)
 done
